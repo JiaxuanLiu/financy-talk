@@ -1,7 +1,5 @@
 """Multi-talker comparison and aggregation via OpenAI API."""
 
-from openai import APIError
-
 from financy_talk.data.loader import TalkerTranscript
 
 COMPARISON_PROMPT = """你是一位资深财经分析师。以下是多位财经博主的近期观点汇总，请完成以下分析：
@@ -25,20 +23,20 @@ def aggregate_talkers(
 
     user_content = _build_comparison_prompt(talkers_data)
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": COMPARISON_PROMPT},
-                {"role": "user", "content": user_content},
-            ],
-            temperature=0.7,
-            max_tokens=4000,
-            timeout=120,
-        )
-    except APIError as e:
-        raise
-    return response.choices[0].message.content
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": COMPARISON_PROMPT},
+            {"role": "user", "content": user_content},
+        ],
+        temperature=0.7,
+        max_tokens=4000,
+        timeout=120,
+    )
+    content = response.choices[0].message.content
+    if content is None:
+        raise RuntimeError("API returned empty response (possible content filter)")
+    return content
 
 
 def _build_comparison_prompt(talkers_data: dict[str, list[TalkerTranscript]]) -> str:

@@ -1,7 +1,5 @@
 """Single-talker analysis via OpenAI API."""
 
-from openai import APIError
-
 from financy_talk.data.loader import TalkerTranscript
 
 SYSTEM_PROMPT = """你是一位资深财经分析师。请根据以下抖音财经博主近期的视频文案，完成以下分析：
@@ -25,20 +23,20 @@ def analyze_talker(
 
     user_content = _build_user_prompt(name, transcripts)
 
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_content},
-            ],
-            temperature=0.7,
-            max_tokens=4000,
-            timeout=120,
-        )
-    except APIError as e:
-        raise
-    return response.choices[0].message.content
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": user_content},
+        ],
+        temperature=0.7,
+        max_tokens=4000,
+        timeout=120,
+    )
+    content = response.choices[0].message.content
+    if content is None:
+        raise RuntimeError("API returned empty response (possible content filter)")
+    return content
 
 
 def _build_user_prompt(name: str, transcripts: list[TalkerTranscript]) -> str:

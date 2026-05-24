@@ -18,6 +18,8 @@ class TalkerTranscript:
 
 
 def load_talker_transcripts(name: str, talkers_root: Path | None = None) -> list[TalkerTranscript]:
+    if ".." in name or "/" in name or "\\" in name:
+        raise ValueError(f"Invalid talker name: {name}")
     root = talkers_root or DATA_DIR
     talker_dir = root / name
     if not talker_dir.is_dir():
