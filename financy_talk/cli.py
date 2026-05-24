@@ -9,6 +9,7 @@ from financy_talk.data.loader import load_talker_transcripts, list_talkers
 from financy_talk.ai.analyzer import analyze_talker
 from financy_talk.ai.aggregator import aggregate_talkers
 from financy_talk.output.reporter import format_report, save_report
+from financy_talk.scrapers.douyin import extract_video_id, fetch_video_info, save_as_transcript, FetchError
 
 
 @click.group()
@@ -107,3 +108,44 @@ def list_command():
             click.echo(f"  - {t} ({count} 篇文案)")
         except FileNotFoundError:
             click.echo(f"  - {t} (0 篇文案)")
+
+
+@main.command("fetch")
+@click.argument("url")
+@click.option("--talker", "-t", required=True, help="目标 talker 名称")
+def fetch_command(url: str, talker: str):
+    """从抖音分享链接提取视频文案，保存到 talker 目录。"""
+    click.echo("正在提取视频文案...")
+    try:
+        video_id = extract_video_id(url)
+    except Exception as e:
+        click.echo(f"Error: 无法解析分享链接 — {e}", err=True)
+        sys.exit(1)
+
+    click.echo(f"  视频ID: {video_id}")
+
+    try:
+        info = fetch_video_info(video_id)
+    except Exception as e:
+        click.echo(f"Error: 获取视频信息失败 — {e}", err=True)
+        sys.exit(1)
+
+    click.echo(f"  作者: {info['author']}")
+    from datetime import datetime
+    if info["create_time"]:
+        click.echo(f"  发布时间: {datetime.fromtimestamp(info['create_time']).strftime('%Y-%m-%d %H:%M')}")
+
+    try:
+        path = save_as_transcript(info, talker)
+    except (ValueError, FetchError) as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
+
+    # Count existing transcripts
+    try:
+        existing = load_talker_transcripts(talker)
+        count = len(existing)
+    except Exception:
+        count = 1
+
+    click.echo(f"文案已保存到: {path} (共 {count} 篇)")

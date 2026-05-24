@@ -15,9 +15,9 @@ SETTINGS_FILE = PROJECT_ROOT / "settings.yaml"
 # Default model tiers — overridden by settings.yaml if present
 _DEFAULT_SETTINGS = {
     "models": {
-        "haiku":  {"model": "deepseek-chat", "max_tokens": 2000},
-        "sonnet": {"model": "deepseek-chat", "max_tokens": 4000},
-        "opus":   {"model": "deepseek-chat", "max_tokens": 8000},
+        "haiku":  {"model": "deepseek-v4-flash", "max_tokens": 2000},
+        "sonnet": {"model": "deepseek-v4-flash", "max_tokens": 4000},
+        "opus":   {"model": "deepseek-v4-flash", "max_tokens": 8000},
     }
 }
 
@@ -48,7 +48,7 @@ def get_model_config(tier: str) -> ModelConfig:
     models = settings.get("models", {})
     tier_config = models.get(tier, _DEFAULT_SETTINGS["models"].get(tier, {}))
     return ModelConfig(
-        model=tier_config.get("model", "deepseek-chat"),
+        model=tier_config.get("model", "deepseek-v4-flash"),
         max_tokens=tier_config.get("max_tokens", 4000),
     )
 

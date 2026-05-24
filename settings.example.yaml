@@ -10,13 +10,13 @@ api_key: "your-api-key-here"
 # 三级模型对应不同分析深度，可替换为任意 OpenAI 兼容模型
 models:
   haiku:                    # 快速模式（轻量分析）
-    model: deepseek-chat
+    model: deepseek-v4-flash
     max_tokens: 2000
 
   sonnet:                   # 标准模式（单 talker 分析）
-    model: deepseek-chat
+    model: deepseek-v4-flash
     max_tokens: 4000
 
   opus:                     # 深度模式（多 talker 对比）
-    model: deepseek-chat
+    model: deepseek-v4-flash
     max_tokens: 8000

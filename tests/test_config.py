@@ -63,7 +63,7 @@ class TestModelConfig:
         """Fall back to built-in defaults when settings.yaml doesn't exist."""
         with mock.patch("financy_talk.config.SETTINGS_FILE", tmp_path / "nonexistent.yaml"):
             cfg = get_model_config("sonnet")
-            assert cfg.model == "deepseek-chat"
+            assert cfg.model == "deepseek-v4-flash"
             assert cfg.max_tokens == 4000
 
     def test_haiku_default(self, tmp_path):

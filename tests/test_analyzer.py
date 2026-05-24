@@ -45,7 +45,7 @@ def test_analyze_talker_returns_string(mock_client):
     mock_client.chat.completions.create.assert_called_once()
 
     call_kwargs = mock_client.chat.completions.create.call_args.kwargs
-    assert call_kwargs["model"] == "deepseek-chat"
+    assert call_kwargs["model"] == "deepseek-v4-flash"
     messages = call_kwargs["messages"]
     assert messages[0]["role"] == "system"
     assert "财经" in messages[0]["content"]
