@@ -18,13 +18,13 @@ def aggregate_talkers(
 ) -> str:
     if client is None:
         from openai import OpenAI
-        from financy_talk.config import get_api_key
-        client = OpenAI(api_key=get_api_key(), timeout=120)
+        from financy_talk.config import get_api_key, DEEPSEEK_BASE_URL
+        client = OpenAI(api_key=get_api_key(), base_url=DEEPSEEK_BASE_URL, timeout=120)
 
     user_content = _build_comparison_prompt(talkers_data)
 
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="deepseek-chat",
         messages=[
             {"role": "system", "content": COMPARISON_PROMPT},
             {"role": "user", "content": user_content},

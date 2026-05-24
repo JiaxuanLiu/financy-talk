@@ -1,6 +1,6 @@
 # Financy Talk
 
-AI 驱动的财经舆情分析工具。汇总抖音财经 talker 的视频文案，通过 OpenAI API 自动生成产业趋势研判和股市分析报告。
+AI 驱动的财经舆情分析工具。汇总抖音财经 talker 的视频文案，通过 DeepSeek API 自动生成产业趋势研判和股市分析报告。
 
 ## 安装
 
@@ -10,15 +10,17 @@ pip install -e .
 
 ## 环境配置
 
-设置 OpenAI API Key（二选一）：
+设置 DeepSeek API Key（二选一）：
 
 ```bash
 # 方式一：环境变量
-export OPENAI_API_KEY=sk-xxxxx
+export DEEPSEEK_API_KEY=sk-xxxxx
 
 # 方式二：.env 文件（放在项目根目录）
-echo 'OPENAI_API_KEY=sk-xxxxx' > .env
+echo 'DEEPSEEK_API_KEY=sk-xxxxx' > .env
 ```
+
+> DeepSeek API Key 可在 https://platform.deepseek.com/api_keys 获取。
 
 ## 快速开始
 
@@ -88,5 +90,5 @@ python -m pytest tests/ -v
 ## 依赖
 
 - Python 3.10+
-- OpenAI API
+- DeepSeek API（兼容 OpenAI SDK）
 - Click
