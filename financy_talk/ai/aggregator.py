@@ -1,6 +1,7 @@
 """Multi-talker comparison and aggregation via OpenAI API."""
 
 from financy_talk.data.loader import TalkerTranscript
+from financy_talk.config import get_model_config, get_api_key, DEEPSEEK_BASE_URL
 
 COMPARISON_PROMPT = """你是一位资深财经分析师。以下是多位财经博主的近期观点汇总，请完成以下分析：
 
@@ -16,21 +17,22 @@ def aggregate_talkers(
     talkers_data: dict[str, list[TalkerTranscript]],
     client: "OpenAI | None" = None,
 ) -> str:
+    model_config = get_model_config("opus")
+
     if client is None:
         from openai import OpenAI
-        from financy_talk.config import get_api_key, DEEPSEEK_BASE_URL
         client = OpenAI(api_key=get_api_key(), base_url=DEEPSEEK_BASE_URL, timeout=120)
 
     user_content = _build_comparison_prompt(talkers_data)
 
     response = client.chat.completions.create(
-        model="deepseek-chat",
+        model=model_config.model,
         messages=[
             {"role": "system", "content": COMPARISON_PROMPT},
             {"role": "user", "content": user_content},
         ],
         temperature=0.7,
-        max_tokens=4000,
+        max_tokens=model_config.max_tokens,
         timeout=120,
     )
     content = response.choices[0].message.content
