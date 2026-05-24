@@ -10,6 +10,8 @@ def format_report(content: str, talker_name: str, date: str) -> str:
 
 
 def save_report(content: str, *, talker_name: str, date: str, output_dir: Path | None = None) -> Path:
+    if ".." in talker_name or "/" in talker_name or "\\" in talker_name:
+        raise ValueError(f"Invalid talker name: {talker_name}")
     base = output_dir or OUTPUT_DIR
     target_dir = base / talker_name
     target_dir.mkdir(parents=True, exist_ok=True)
