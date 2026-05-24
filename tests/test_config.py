@@ -28,11 +28,24 @@ def test_get_api_key_from_dotenv(tmp_path):
     assert result == "sk-dotenv456"
 
 
+def test_get_api_key_from_settings(tmp_path):
+    """Fall back to api_key field in settings.yaml when env/.env are empty."""
+    import yaml
+    settings_file = tmp_path / "settings.yaml"
+    settings_file.write_text(yaml.dump({"api_key": "sk-from-settings"}), encoding="utf-8")
+    with mock.patch.dict(os.environ, {}, clear=True):
+        with mock.patch("financy_talk.config.PROJECT_ROOT", tmp_path):
+            with mock.patch("financy_talk.config.SETTINGS_FILE", settings_file):
+                result = get_api_key()
+    assert result == "sk-from-settings"
+
+
 def test_get_api_key_missing(tmp_path):
     with mock.patch.dict(os.environ, {}, clear=True):
         with mock.patch("financy_talk.config.PROJECT_ROOT", tmp_path):
-            with pytest.raises(ConfigError):
-                get_api_key()
+            with mock.patch("financy_talk.config.SETTINGS_FILE", tmp_path / "nonexistent.yaml"):
+                with pytest.raises(ConfigError):
+                    get_api_key()
 
 
 def test_data_dir():

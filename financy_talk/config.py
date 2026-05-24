@@ -54,10 +54,20 @@ def get_model_config(tier: str) -> ModelConfig:
 
 
 def get_api_key() -> str:
+    # Priority: env var > .env file > settings.yaml
     load_dotenv(PROJECT_ROOT / ".env")
     key = os.getenv("DEEPSEEK_API_KEY")
-    if not key:
-        raise ConfigError(
-            f"DEEPSEEK_API_KEY not set. Set it via environment or .env file at {PROJECT_ROOT / '.env'}"
-        )
-    return key
+    if key:
+        return key
+
+    settings = _load_settings()
+    key = settings.get("api_key", "")
+    if key:
+        return key
+
+    raise ConfigError(
+        f"DEEPSEEK_API_KEY not set. Options:\n"
+        f"  1. export DEEPSEEK_API_KEY=sk-xxxxx\n"
+        f"  2. echo 'DEEPSEEK_API_KEY=sk-xxxxx' > {PROJECT_ROOT / '.env'}\n"
+        f"  3. Set 'api_key' field in {SETTINGS_FILE}"
+    )

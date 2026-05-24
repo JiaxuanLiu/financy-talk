@@ -1,6 +1,10 @@
-# Financy Talk 模型配置
-# 三级模型对应不同分析深度，可替换为任意 OpenAI 兼容模型
+# Financy Talk 配置
+# 所有配置项均可在此修改，也可通过环境变量覆盖
 
+# DeepSeek API Key（三选一即可，优先级：环境变量 > .env > 此处）
+api_key: ""
+
+# 三级模型对应不同分析深度，可替换为任意 OpenAI 兼容模型
 models:
   haiku:                    # 快速模式（轻量分析）
     model: deepseek-chat
