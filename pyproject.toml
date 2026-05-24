@@ -13,5 +13,8 @@ dependencies = [
     "python-dotenv>=1.0",
 ]
 
+[project.scripts]
+financy-talk = "financy_talk.cli:main"
+
 [tool.setuptools.packages.find]
 include = ["financy_talk*"]
