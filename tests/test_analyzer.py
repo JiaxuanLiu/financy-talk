@@ -1,5 +1,9 @@
 """Tests for AI analyzer."""
 from unittest import mock
+
+import pytest
+from openai import APIError
+
 from financy_talk.ai.analyzer import analyze_talker
 from financy_talk.data.loader import TalkerTranscript, TranscriptEntry
 
@@ -23,14 +27,19 @@ SAMPLE_TRANSCRIPTS = [
 FAKE_RESPONSE = "本次分析：半导体持续看好，新能源短期承压，AI算力长期利好。"
 
 
-def test_analyze_talker_returns_string():
-    mock_client = mock.MagicMock()
+@pytest.fixture
+def mock_client():
+    """Return a mock OpenAI client pre-configured to return FAKE_RESPONSE."""
+    client = mock.MagicMock()
     mock_response = mock.MagicMock()
     mock_response.choices = [
         mock.MagicMock(message=mock.MagicMock(content=FAKE_RESPONSE))
     ]
-    mock_client.chat.completions.create.return_value = mock_response
+    client.chat.completions.create.return_value = mock_response
+    return client
 
+
+def test_analyze_talker_returns_string(mock_client):
     result = analyze_talker("talker1", SAMPLE_TRANSCRIPTS, client=mock_client)
     assert result == FAKE_RESPONSE
     mock_client.chat.completions.create.assert_called_once()
@@ -44,8 +53,7 @@ def test_analyze_talker_returns_string():
     assert "半导体" in messages[1]["content"]
 
 
-def test_analyze_talker_empty_transcripts():
-    mock_client = mock.MagicMock()
+def test_analyze_talker_empty_transcripts(mock_client):
     mock_response = mock.MagicMock()
     mock_response.choices = [
         mock.MagicMock(message=mock.MagicMock(content="无数据可分析。"))
@@ -54,3 +62,16 @@ def test_analyze_talker_empty_transcripts():
 
     result = analyze_talker("talker1", [], client=mock_client)
     assert result == "无数据可分析。"
+
+
+def test_analyze_talker_api_error_propagates():
+    client = mock.MagicMock()
+    mock_request = mock.MagicMock()
+    client.chat.completions.create.side_effect = APIError(
+        message="Service Unavailable",
+        request=mock_request,
+        body=None,
+    )
+
+    with pytest.raises(APIError):
+        analyze_talker("talker1", SAMPLE_TRANSCRIPTS, client=client)
