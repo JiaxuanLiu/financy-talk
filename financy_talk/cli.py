@@ -26,10 +26,6 @@ def analyze(name: str):
         click.echo(f"Error: {e}", err=True)
         sys.exit(1)
 
-    if not transcripts:
-        click.echo(f"Talker '{name}' has no transcript files.")
-        sys.exit(1)
-
     click.echo(f"正在分析 {name} ({len(transcripts)} 篇文案)...")
     try:
         _ = get_api_key()
@@ -46,7 +42,11 @@ def analyze(name: str):
     today = date.today().isoformat()
     formatted = format_report(result, talker_name=name, date=today)
     click.echo(formatted)
-    path = save_report(formatted, talker_name=name, date=today)
+    try:
+        path = save_report(formatted, talker_name=name, date=today)
+    except ValueError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
     click.echo(f"\n报告已保存到：{path}")
 
 
@@ -84,7 +84,11 @@ def compare(names: tuple[str, ...]):
     today = date.today().isoformat()
     formatted = format_report(result, talker_name="comparison", date=today)
     click.echo(formatted)
-    path = save_report(formatted, talker_name="comparison", date=today)
+    try:
+        path = save_report(formatted, talker_name="comparison", date=today)
+    except ValueError as e:
+        click.echo(f"Error: {e}", err=True)
+        sys.exit(1)
     click.echo(f"\n报告已保存到：{path}")
 
 

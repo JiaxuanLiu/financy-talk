@@ -56,7 +56,7 @@ def test_compare_success():
     runner = CliRunner()
     fake_report = "对比分析结果"
 
-    with mock.patch("financy_talk.cli.load_talker_transcripts", return_value=[]):
+    with mock.patch("financy_talk.cli.load_talker_transcripts", return_value=["fake_transcript"]):
         with mock.patch("financy_talk.cli.aggregate_talkers", return_value=fake_report):
             with mock.patch("financy_talk.cli.format_report", return_value="格式化对比报告"):
                 with mock.patch("financy_talk.cli.save_report"):

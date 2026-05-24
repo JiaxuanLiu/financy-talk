@@ -1,5 +1,4 @@
 """Single-talker analysis via OpenAI API."""
-import sys
 
 from openai import APIError
 
@@ -38,7 +37,6 @@ def analyze_talker(
             timeout=120,
         )
     except APIError as e:
-        print(f"OpenAI API error: {e}", file=sys.stderr)
         raise
     return response.choices[0].message.content
 
