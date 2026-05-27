@@ -9,6 +9,6 @@ dist/
 build/
 output/reports/
 
-# Talker transcripts — only README.md is committed (copyright protection)
-data/talkers/*/*.md
-!data/talkers/*/README.md
+# Talker data — all user content excluded (copyright protection)
+data/talkers/*
+!data/talkers/TEMPLATE.md

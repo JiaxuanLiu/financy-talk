@@ -1,5 +1,7 @@
 """Load and parse talker transcript markdown files."""
+import re
 from dataclasses import dataclass, field
+from datetime import date, timedelta
 from pathlib import Path
 
 from financy_talk.config import DATA_DIR
@@ -78,3 +80,68 @@ def _parse_markdown(text: str) -> TalkerTranscript:
         ))
 
     return TalkerTranscript(date=date or "", entries=entries)
+
+
+# ---------------------------------------------------------------------------
+# Trust scores & time windows
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class TrustScores:
+    short_term: int   # 0-100
+    mid_term: int
+    long_term: int
+
+    SHORT_DAYS: int = 5
+    MID_DAYS: int = 20
+    LONG_DAYS: int = 180
+
+
+def parse_trust_scores(name: str) -> TrustScores | None:
+    """Extract trust scores from a talker's README.md. Returns None if unparseable."""
+    readme = DATA_DIR / name / "README.md"
+    if not readme.exists():
+        return None
+    text = readme.read_text(encoding="utf-8")
+
+    def _extract(label: str) -> int | None:
+        m = re.search(rf"{label}.*?(\d+)\s*分", text)
+        return int(m.group(1)) if m else None
+
+    short_val = _extract("短期信任评分")
+    mid_val = _extract("中期信任评分")
+    long_val = _extract("长期信任评分")
+
+    if short_val is None or mid_val is None or long_val is None:
+        return None
+    return TrustScores(short_term=short_val, mid_term=mid_val, long_term=long_val)
+
+
+def split_by_time_window(
+    transcripts: list[TalkerTranscript],
+) -> tuple[list[TalkerTranscript], list[TalkerTranscript], list[TalkerTranscript]]:
+    """Split transcripts into (short, mid, long) windows based on TrustScores day ranges.
+
+    short: 0-5 days,  mid: 5-20 days,  long: 20-180 days.
+    Transcripts older than 180 days are dropped.
+    """
+    today = date.today()
+    short = []
+    mid = []
+    long_list = []
+
+    for t in transcripts:
+        try:
+            d = date.fromisoformat(t.date)
+        except (ValueError, TypeError):
+            continue
+        delta = (today - d).days
+        if delta < TrustScores.SHORT_DAYS:
+            short.append(t)
+        elif delta < TrustScores.MID_DAYS:
+            mid.append(t)
+        elif delta < TrustScores.LONG_DAYS:
+            long_list.append(t)
+        # else: older than 180 days — drop
+
+    return short, mid, long_list

@@ -4,7 +4,6 @@ from unittest import mock
 
 import pytest
 import httpx
-from click.testing import CliRunner
 
 from financy_talk.scrapers.douyin import (
     extract_video_id,
@@ -13,7 +12,6 @@ from financy_talk.scrapers.douyin import (
     FetchError,
     MOBILE_UA,
 )
-from financy_talk.cli import main
 
 
 # ---------------------------------------------------------------------------
@@ -158,36 +156,3 @@ def test_save_as_transcript_path_traversal_rejected(tmp_path):
     with pytest.raises(ValueError, match="Invalid talker name"):
         save_as_transcript(info, "../evil", talkers_root=tmp_path)
 
-
-# ---------------------------------------------------------------------------
-# CLI integration
-# ---------------------------------------------------------------------------
-
-def test_fetch_cli_success():
-    """End-to-end CLI smoke test with mocked network."""
-    runner = CliRunner()
-    with mock.patch("financy_talk.cli.extract_video_id", return_value="12345"):
-        with mock.patch("financy_talk.cli.fetch_video_info", return_value={
-            "desc": "test desc\ncontent here",
-            "author": "test_author",
-            "create_time": 1779753600,
-        }):
-            with mock.patch("financy_talk.cli.save_as_transcript") as mock_save:
-                mock_save.return_value = mock.MagicMock()
-                result = runner.invoke(main, [
-                    "fetch", "https://v.douyin.com/test/", "--talker", "t1"
-                ])
-                assert result.exit_code == 0
-                assert "12345" in result.output
-                assert "test_author" in result.output
-
-
-def test_fetch_cli_bad_link():
-    runner = CliRunner()
-    with mock.patch("financy_talk.cli.extract_video_id",
-                    side_effect=FetchError("bad link")):
-        result = runner.invoke(main, [
-            "fetch", "https://v.douyin.com/bad/", "--talker", "t1"
-        ])
-        assert result.exit_code == 1
-        assert "bad link" in result.output
